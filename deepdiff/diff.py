@@ -1008,6 +1008,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
                                      apply_hash=True,
                                      **self.deephash_parameters,
                                      )
+                # print("deephash-",item,"-",deep_hash,"")
             except UnicodeDecodeError as err:
                 err.reason = f"Can not produce a hash for {level.path()}: {err.reason}"
                 raise
@@ -1018,6 +1019,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             else:
                 try:
                     item_hash = deep_hash[item]
+                    print("itemhash - ",item," - ",item_hash,"\n\n")
                 except KeyError:
                     pass
                 else:
@@ -1187,6 +1189,8 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
 
         full_t1_hashtable = self._create_hashtable(level, 't1')
         full_t2_hashtable = self._create_hashtable(level, 't2')
+        print("\n########## t1 - full_t1_hashtable - ",full_t1_hashtable)
+        print("\n########## t2 - full_t2_hashtable - ",full_t2_hashtable,"\n\n")
         t1_hashes = OrderedSetPlus(full_t1_hashtable.keys())
         t2_hashes = OrderedSetPlus(full_t2_hashtable.keys())
         hashes_added = t2_hashes - t1_hashes
@@ -1205,6 +1209,8 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
         else:
             t1_hashtable = {k: v for k, v in full_t1_hashtable.items() if k in hashes_removed}
             t2_hashtable = {k: v for k, v in full_t2_hashtable.items() if k in hashes_added}
+            # print("\n########## t1 - small-hash-table - ",t1_hashtable)
+            # print("\n########## t2 - small-hash-table - ",t2_hashtable,"\n\n")
 
         if self._stats[PASSES_COUNT] < self.max_passes and get_pairs:
             self._stats[PASSES_COUNT] += 1
@@ -1552,6 +1558,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             self._diff_booleans(level, local_tree=local_tree)
 
         elif isinstance(level.t1, strings):
+            print("...strings...")
             self._diff_str(level, local_tree=local_tree)
 
         elif isinstance(level.t1, datetimes):
@@ -1561,6 +1568,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             self._diff_uuids(level, local_tree=local_tree)
 
         elif isinstance(level.t1, numbers):
+            print("...numbers...")
             self._diff_numbers(level, local_tree=local_tree, report_type_change=report_type_change)
 
         elif isinstance(level.t1, Mapping):
@@ -1579,6 +1587,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             self._diff_obj(level, parents_ids, local_tree=local_tree)
 
         elif isinstance(level.t1, Iterable):
+            print("...iterable...")
             self._diff_iterable(level, parents_ids, _original_type=_original_type, local_tree=local_tree)
 
         elif isinstance(level.t1, Enum):

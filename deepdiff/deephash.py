@@ -420,11 +420,14 @@ class DeepHash(Base):
             counts += count
 
         if self.ignore_repetition:
+            print("---------------------no repeat:",result,"\n\n")
             result = list(result.keys())
         else:
+            print("---------------------with repeat:",result,"\n\n")
             result = [
                 '{}|{}'.format(i, v) for i, v in result.items()
             ]
+
 
         result = map(str, result) # making sure the result items are string so join command works.
         if self.ignore_iterable_order:
