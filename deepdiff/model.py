@@ -60,8 +60,10 @@ class PrettyOrderedSet(OrderedSet):
 
 class TreeResult(ResultDict):
     def __init__(self):
+        print("REPORT_KEYS", REPORT_KEYS)
         for key in REPORT_KEYS:
             self[key] = PrettyOrderedSet()
+
 
     def mutual_add_removes_to_become_value_changes(self):
         """
@@ -77,7 +79,11 @@ class TreeResult(ResultDict):
             added_paths = {i.path(): i for i in self['iterable_item_added']}
             removed_paths = {i.path(): i for i in self['iterable_item_removed']}
             mutual_paths = set(added_paths) & set(removed_paths)
-
+            print("$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+            print("added_paths", added_paths)
+            print("removed_paths", removed_paths)
+            print("mutual_paths", mutual_paths)
+            print("$$$$$$$$$$$$$$$$$$$$$$$$$$$")
             if mutual_paths and 'values_changed' not in self:
                 self['values_changed'] = PrettyOrderedSet()
             for path in mutual_paths:
@@ -198,7 +204,9 @@ class TextResult(ResultDict):
                     remap_dict.update(old_value=change.t1, new_value=change.t2)
 
     def _from_tree_value_changed(self, tree):
+        print("_from_tree_value_changed")
         if 'values_changed' in tree and self.verbose_level > 0:
+            print("Tree value changed", tree['values_changed'])
             for change in tree['values_changed']:
                 the_changed = {'new_value': change.t2, 'old_value': change.t1}
                 self['values_changed'][change.path(

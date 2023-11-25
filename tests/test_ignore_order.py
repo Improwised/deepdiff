@@ -6,6 +6,8 @@ from deepdiff import DeepDiff
 from decimal import Decimal
 from deepdiff.deephash import sha256hex
 from tests import CustomClass2
+from pprint import pprint
+
 
 
 class TestIgnoreOrder:
@@ -175,14 +177,13 @@ class TestIgnoreOrder:
             }
         }
         assert result == ddiff
-
-    @pytest.mark.skip
+    
     def test_list_difference_ignore_order_report_repetition2(self):
         t1 = [1, 1, 1]
         t2 = [2, 2]
-        ddiff = DeepDiff(t1, t2, ignore_order=True)
-        result = {'values_changed': {'root[0]': {'new_value': 2, 'old_value': 1}}}
-        assert result == ddiff
+        # ddiff = DeepDiff(t1, t2, ignore_order=True)
+        # result = {'values_changed': {'root[0]': {'new_value': 2, 'old_value': 1}}}
+        # assert result == ddiff
 
         ddiff2 = DeepDiff(t1, t2, ignore_order=True, report_repetition=True, cutoff_intersection_for_pairs=1, cutoff_distance_for_pairs=1)
         result2 = {
@@ -196,9 +197,10 @@ class TestIgnoreOrder:
                 'root[1]': 2,
             },
         }
+        print("***********************")
+        pprint(ddiff2, indent=2)
         assert result2 == ddiff2
 
-    @pytest.mark.skip
     def test_list_difference_ignore_order_report_repetition3(self):
         t1 = [{"id": 1}, {"id": 1}, {"id": 1}]
         t2 = [{"id": 1, "name": 1}]
@@ -211,6 +213,9 @@ class TestIgnoreOrder:
             },
             'dictionary_item_added': ["root[0]['name']"]
         }
+        print("***********************")
+        pprint(ddiff2)
+        print("***********************")
         assert result2 == ddiff2
 
     @pytest.mark.skip
