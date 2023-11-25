@@ -419,14 +419,16 @@ class DeepHash(Base):
             result[hashed] += 1
             counts += count
 
+        print("---------------------before filter:",result,"\n\n")
+
         if self.ignore_repetition:
-            print("---------------------no repeat:",result,"\n\n")
             result = list(result.keys())
+            print("---------------------no repeat:",result,"\n\n")
         else:
-            print("---------------------with repeat:",result,"\n\n")
             result = [
                 '{}|{}'.format(i, v) for i, v in result.items()
             ]
+            print("---------------------with repeat:",result,"\n\n")
 
 
         result = map(str, result) # making sure the result items are string so join command works.
