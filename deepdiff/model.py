@@ -562,7 +562,7 @@ class DiffLevel:
 
         self.verbose_level = verbose_level
 
-        print(12, "+",self.t1_child_rel, self.t2_child_rel, self._path, self.verbose_level)
+        print(12, "+", self.t1_child_rel, self.t2_child_rel, self._path, self.verbose_level)
 
     def __repr__(self):
         if self.verbose_level:
@@ -579,7 +579,7 @@ class DiffLevel:
 
     def __setattr__(self, key, value):
         # Setting up or down, will set the opposite link in this linked list.
-        print(13, key, value, key in UP_DOWN , value is not None, key in UP_DOWN and value is not None)
+        # print(13, key, value, key in UP_DOWN , value is not None, key in UP_DOWN and value is not None)
         if key in UP_DOWN and value is not None:
             opposite_key = UP_DOWN[key]
             value.__dict__[opposite_key] = self

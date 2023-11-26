@@ -343,7 +343,9 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             if get_deep_distance and view in {TEXT_VIEW, TREE_VIEW}:
                 self.tree['deep_distance'] = self._get_rough_distance()
 
+            print(129, "before delete", self.tree)
             self.tree.remove_empty_keys()
+            print(130, "after delete", self.tree)
             view_results = self._get_view_results(self.view)
             self.update(view_results)
         finally:
@@ -813,6 +815,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             )
             # Sometimes DeepDiff's old iterable diff does a better job than DeepDiff
             if len(local_tree_pass) > 1:
+                print(126, "yes, you are inside")
                 local_tree_pass2 = TreeResult()
                 self._diff_by_forming_pairs_and_comparing_one_by_one(
                     level,
@@ -875,8 +878,8 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
         ):
             if self._count_diff() is StopIteration:
                 return  # pragma: no cover. This is already covered for addition.
-
             if y is ListItemRemovedOrAdded:  # item removed completely
+                print(127, "loop", (i, j), (x, y) )
                 change_level = level.branch_deeper(
                     x,
                     notpresent,
@@ -949,7 +952,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
         self, level, local_tree, parents_ids=frozenset(), _original_type=None, child_relationship_class=None,
     ):
         seq = difflib.SequenceMatcher(isjunk=None, a=level.t1, b=level.t2, autojunk=False)
-        print(115, level, local_tree, parents_ids, _original_type, child_relationship_class, seq)
+        print(115, level, local_tree, parents_ids, _original_type, child_relationship_class, seq, sep="\n- ")
 
         opcode = seq.get_opcodes()
         for tag, t1_from_index, t1_to_index, t2_from_index, t2_to_index in opcode:
@@ -1563,6 +1566,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
 
         return False
 
+    # here level is difflevel
     def _diff(self, level, parents_ids=frozenset(), _original_type=None, local_tree=None):
         """
         The main diff method
