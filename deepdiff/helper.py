@@ -1,3 +1,4 @@
+# https://www.scaler.com/topics/python-ellipsis/
 import sys
 import re
 import os
@@ -7,11 +8,21 @@ import logging
 import warnings
 import string
 import time
+
+# https://docs.python.org/3/library/ast.html#ast.literal_eval
 from ast import literal_eval
+
+# https://docs.python.org/3/library/decimal.html
 from decimal import Decimal, localcontext, InvalidOperation as InvalidDecimalOperation
+
+# https://www.geeksforgeeks.org/namedtuple-in-python/
 from collections import namedtuple
+
+# https://docs.python.org/3/library/itertools.html#itertools.repeat
 from itertools import repeat
 from ordered_set import OrderedSet
+
+# https://www.section.io/engineering-education/how-to-perform-threading-timer-in-python/
 from threading import Timer
 
 
@@ -27,7 +38,7 @@ try:
     import numpy as np
 except ImportError:  # pragma: no cover. The case without Numpy is tested locally only.
     np = None  # pragma: no cover.
-    np_array_factory = 'numpy not available'  # pragma: no cover.
+    np_array_factory = "numpy not available"  # pragma: no cover.
     np_ndarray = np_type  # pragma: no cover.
     np_bool_ = np_type  # pragma: no cover.
     np_int8 = np_type  # pragma: no cover.
@@ -64,30 +75,53 @@ else:
     np_uintp = np.uintp
     np_float32 = np.float32
     np_float64 = np.float64
-    np_double = np.double  # np.float_ is an alias for np.double and is being removed by NumPy 2.0
+    np_double = (
+        np.double
+    )  # np.float_ is an alias for np.double and is being removed by NumPy 2.0
     np_floating = np.floating
     np_complex64 = np.complex64
     np_complex128 = np.complex128
-    np_cdouble = np.cdouble  # np.complex_ is an alias for np.cdouble and is being removed by NumPy 2.0
+    np_cdouble = (
+        np.cdouble
+    )  # np.complex_ is an alias for np.cdouble and is being removed by NumPy 2.0
     np_complexfloating = np.complexfloating
 
 numpy_numbers = (
-    np_int8, np_int16, np_int32, np_int64, np_uint8,
-    np_uint16, np_uint32, np_uint64, np_intp, np_uintp,
-    np_float32, np_float64, np_double, np_floating, np_complex64,
-    np_complex128, np_cdouble,)
+    np_int8,
+    np_int16,
+    np_int32,
+    np_int64,
+    np_uint8,
+    np_uint16,
+    np_uint32,
+    np_uint64,
+    np_intp,
+    np_uintp,
+    np_float32,
+    np_float64,
+    np_double,
+    np_floating,
+    np_complex64,
+    np_complex128,
+    np_cdouble,
+)
 
 numpy_complex_numbers = (
-    np_complexfloating, np_complex64, np_complex128, np_cdouble,
+    np_complexfloating,
+    np_complex64,
+    np_complex128,
+    np_cdouble,
 )
+print(np_cdouble, np_complex128)  # both share shame datatype
 
 numpy_dtypes = set(numpy_numbers)
 numpy_dtypes.add(np_bool_)
 
-numpy_dtype_str_to_type = {
-    item.__name__: item for item in numpy_dtypes
-}
+numpy_dtype_str_to_type = {item.__name__: item for item in numpy_dtypes}
+for k in [(item.__name__, item) for item in numpy_dtypes]:
+    print(k)
 
+# https://docs.pydantic.dev/latest/
 try:
     from pydantic.main import BaseModel as PydanticBaseModel
 except ImportError:
@@ -106,6 +140,7 @@ py3 = py_major_version == 3
 py4 = py_major_version == 4
 
 
+# https://www.programiz.com/python-programming/methods/built-in/frozenset#:~:text=Python%20Sets-,Python%20frozenset(),as%20elements%20of%20another%20set.
 NUMERICS = frozenset(string.digits)
 
 
@@ -123,8 +158,11 @@ def _int_or_zero(value):
             if char in NUMERICS:
                 result.append(char)
         if result:
-            return int(''.join(result))
+            return int("".join(result))
         return 0
+
+
+# print(_int_or_zero('1c2c')) -> 12
 
 
 def get_semvar_as_integer(version):
@@ -133,30 +171,46 @@ def get_semvar_as_integer(version):
 
     '1.23.5' to 1023005
     """
-    version = version.split('.')
+    version = version.split(".")
     if len(version) > 3:
         version = version[:3]
     elif len(version) < 3:
-        version.extend(['0'] * (3 - len(version)))
+        version.extend(["0"] * (3 - len(version)))
 
-    return sum([10**(i * 3) * _int_or_zero(v) for i, v in enumerate(reversed(version))])
+    return sum(
+        [10 ** (i * 3) * _int_or_zero(v) for i, v in enumerate(reversed(version))]
+    )
 
+
+# print(get_semvar_as_integer('1.2.3')) # 1000 1000 xx3
+# print(get_semvar_as_integer('1.2.33'))
+# print(get_semvar_as_integer('1.22.33'))
+# print(get_semvar_as_integer('11.22.33'))
+# print(get_semvar_as_integer('11.21.3'))
+# print(get_semvar_as_integer('11.2.3'))
 
 # we used to use OrderedDictPlus when dictionaries in Python were not ordered.
 dict_ = dict
 
 if py4:
-    logger.warning('Python 4 is not supported yet. Switching logic to Python 3.')  # pragma: no cover
+    logger.warning(
+        "Python 4 is not supported yet. Switching logic to Python 3."
+    )  # pragma: no cover
     py3 = True  # pragma: no cover
 
 if py2:  # pragma: no cover
-    sys.exit('Python 2 is not supported anymore. The last version of DeepDiff that supported Py2 was 3.3.0')
+    sys.exit(
+        "Python 2 is not supported anymore. The last version of DeepDiff that supported Py2 was 3.3.0"
+    )
 
 pypy3 = py3 and hasattr(sys, "pypy_translation_info")
 
 
+print(get_semvar_as_integer(np.__version__), np.__version__, 1024004, "1.19.0")
 if np and get_semvar_as_integer(np.__version__) < 1019000:
-    sys.exit('The minimum required Numpy version is 1.19.0. Please upgrade your Numpy package.')
+    sys.exit(
+        "The minimum required Numpy version is 1.19.0. Please upgrade your Numpy package."
+    )
 
 strings = (str, bytes)  # which are both basestring
 unicode_type = str
@@ -164,38 +218,42 @@ bytes_type = bytes
 only_complex_number = (complex,) + numpy_complex_numbers
 only_numbers = (int, float, complex, Decimal) + numpy_numbers
 datetimes = (datetime.datetime, datetime.date, datetime.timedelta, datetime.time)
-uuids = (uuid.UUID, )
+uuids = (uuid.UUID,)
 times = (datetime.datetime, datetime.time)
 numbers = only_numbers + datetimes
 booleans = (bool, np_bool_)
 
-basic_types = strings + numbers + uuids + booleans + (type(None), )
+basic_types = strings + numbers + uuids + booleans + (type(None),)
 
-IndexedHash = namedtuple('IndexedHash', 'indexes item')
+IndexedHash = namedtuple("IndexedHash", "indexes item")
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-ID_PREFIX = '!>*id'
+ID_PREFIX = "!>*id"
 
 KEY_TO_VAL_STR = "{}:{}"
 
-TREE_VIEW = 'tree'
-TEXT_VIEW = 'text'
-DELTA_VIEW = '_delta'
+TREE_VIEW = "tree"
+TEXT_VIEW = "text"
+DELTA_VIEW = "_delta"
 
-ENUM_INCLUDE_KEYS = ['__objclass__', 'name', 'value']
+ENUM_INCLUDE_KEYS = ["__objclass__", "name", "value"]
 
 
 def short_repr(item, max_length=15):
     """Short representation of item if it is too long"""
     item = repr(item)
     if len(item) > max_length:
-        item = '{}...{}'.format(item[:max_length - 3], item[-1])
+        item = "{}...{}".format(item[: max_length - 3], item[-1])
     return item
+
+
+print(short_repr({"hello": "world"}))
 
 
 class ListItemRemovedOrAdded:  # pragma: no cover
     """Class of conditions to be checked"""
+
     pass
 
 
@@ -204,6 +262,9 @@ class OtherTypes:
         return "Error: {}".format(self.__class__.__name__)  # pragma: no cover
 
     __str__ = __repr__
+
+
+print(OtherTypes())
 
 
 class Skipped(OtherTypes):
@@ -226,7 +287,7 @@ class NotPresent:  # pragma: no cover
     """
 
     def __repr__(self):
-        return 'not present'  # pragma: no cover
+        return "not present"  # pragma: no cover
 
     __str__ = __repr__
 
@@ -235,6 +296,7 @@ class CannotCompare(Exception):
     """
     Exception when two items cannot be compared in the compare function.
     """
+
     pass
 
 
@@ -242,6 +304,7 @@ unprocessed = Unprocessed()
 skipped = Skipped()
 not_hashed = NotHashed()
 notpresent = NotPresent()
+print(unprocessed, skipped, not_hashed, notpresent)
 
 # Disabling remapping from old to new keys since the mapping is deprecated.
 RemapDict = dict_
@@ -284,15 +347,31 @@ def add_to_frozen_set(parents_ids, item_id):
     return parents_ids | {item_id}
 
 
+a = indexed_set()
+a.add(56)
+print(add_to_frozen_set(a, 123))
+
+
 def convert_item_or_items_into_set_else_none(items):
     if items:
         if isinstance(items, strings):
+            print("if", items, isinstance(items, strings), type(items), type(strings))
             items = {items}
         else:
+            print("else", items, set(items), isinstance(items, strings))
             items = set(items)
     else:
         items = None
     return items
+
+
+# if you give single item here then set(x) will gives you and error as it's not iterable
+print(convert_item_or_items_into_set_else_none(("5", b"15")))
+print(convert_item_or_items_into_set_else_none(["5", "15"]))
+print(convert_item_or_items_into_set_else_none("5"))
+print(convert_item_or_items_into_set_else_none(b"5"))
+# print(convert_item_or_items_into_set_else_none(5))
+print(convert_item_or_items_into_set_else_none({"5": "15"}))
 
 
 def add_root_to_paths(paths):
@@ -300,13 +379,13 @@ def add_root_to_paths(paths):
     Sometimes the users want to just pass
     [key] instead of root[key] for example.
     Here we automatically add all sorts of variations that might match
-    the path they were supposed to pass. 
+    the path they were supposed to pass.
     """
     if paths is None:
         return
     result = OrderedSet()
     for path in paths:
-        if path.startswith('root'):
+        if path.startswith("root"):
             result.add(path)
         else:
             if path.isdigit():
@@ -320,7 +399,12 @@ def add_root_to_paths(paths):
     return result
 
 
-RE_COMPILED_TYPE = type(re.compile(''))
+print(add_root_to_paths(["root[0]", "root[1] added", "0", "[2, 3]", "tommy", "babblu"]))
+# really write cleaver code
+
+
+RE_COMPILED_TYPE = type(re.compile(""))
+print(RE_COMPILED_TYPE)
 
 
 def convert_item_or_items_into_compiled_regexes_else_none(items):
@@ -333,11 +417,18 @@ def convert_item_or_items_into_compiled_regexes_else_none(items):
     return items
 
 
+print(convert_item_or_items_into_compiled_regexes_else_none(r"/.*"))
+print(convert_item_or_items_into_compiled_regexes_else_none(b"klklkl"))
+
+
 def get_id(obj):
     """
     Adding some characters to id so they are not just integers to reduce the risk of collision.
     """
     return "{}{}".format(ID_PREFIX, id(obj))
+
+
+print(get_id(("something")))
 
 
 def get_type(obj):
@@ -349,6 +440,12 @@ def get_type(obj):
     return obj if type(obj) is type else type(obj)
 
 
+print(get_type(1), type(1) is type)
+print(get_type(set()), type(set()) is type)
+print(get_type(int), type(int) is type)
+print(get_type(dict), type(dict) is type)
+
+
 def numpy_dtype_string_to_type(dtype_str):
     return numpy_dtype_str_to_type[dtype_str]
 
@@ -357,24 +454,32 @@ def type_in_type_group(item, type_group):
     return get_type(item) in type_group
 
 
+print(type_in_type_group(int, (int, float, bool)))
+
+
 def type_is_subclass_of_type_group(item, type_group):
-    return isinstance(item, type_group) \
-        or (isinstance(item, type) and issubclass(item, type_group)) \
+    return (
+        isinstance(item, type_group)
+        or (isinstance(item, type) and issubclass(item, type_group))
         or type_in_type_group(item, type_group)
+    )
+
+
+print()
 
 
 def get_doc(doc_filename):
     try:
-        with open(os.path.join(current_dir, '../docs/', doc_filename), 'r') as doc_file:
+        with open(os.path.join(current_dir, "../docs/", doc_filename), "r") as doc_file:
             doc = doc_file.read()
     except Exception:  # pragma: no cover
-        doc = 'Failed to load the docstrings. Please visit: https://zepworks.com/deepdiff/current/'  # pragma: no cover
+        doc = "Failed to load the docstrings. Please visit: https://zepworks.com/deepdiff/current/"  # pragma: no cover
     return doc
 
 
 number_formatting = {
-    "f": r'{:.%sf}',
-    "e": r'{:.%se}',
+    "f": r"{:.%sf}",
+    "e": r"{:.%se}",
 }
 
 
@@ -384,8 +489,13 @@ def number_to_string(number, significant_digits, number_format_notation="f"):
     """
     try:
         using = number_formatting[number_format_notation]
+        print(using)
     except KeyError:
-        raise ValueError("number_format_notation got invalid value of {}. The valid values are 'f' and 'e'".format(number_format_notation)) from None
+        raise ValueError(
+            "number_format_notation got invalid value of {}. The valid values are 'f' and 'e'".format(
+                number_format_notation
+            )
+        ) from None
 
     if not isinstance(number, numbers):
         return number
@@ -395,12 +505,12 @@ def number_to_string(number, significant_digits, number_format_notation="f"):
             # Using number//1 to get the integer part of the number
             ctx.prec = len(str(abs(number // 1))) + significant_digits
             try:
-                number = number.quantize(Decimal('0.' + '0' * significant_digits))
+                number = number.quantize(Decimal("0." + "0" * significant_digits))
             except InvalidDecimalOperation:
                 # Sometimes rounding up causes a higher precision to be needed for the quantize operation
                 # For example '999.99999999' will become '1000.000000' after quantize
                 ctx.prec += 1
-                number = number.quantize(Decimal('0.' + '0' * significant_digits))
+                number = number.quantize(Decimal("0." + "0" * significant_digits))
     elif isinstance(number, only_complex_number):
         # Case for complex numbers.
         number = number.__class__(
@@ -408,13 +518,13 @@ def number_to_string(number, significant_digits, number_format_notation="f"):
                 real=number_to_string(
                     number=number.real,
                     significant_digits=significant_digits,
-                    number_format_notation=number_format_notation
+                    number_format_notation=number_format_notation,
                 ),
                 imag=number_to_string(
                     number=number.imag,
                     significant_digits=significant_digits,
-                    number_format_notation=number_format_notation
-                )
+                    number_format_notation=number_format_notation,
+                ),
             )
         )
     else:
@@ -428,22 +538,28 @@ def number_to_string(number, significant_digits, number_format_notation="f"):
         number = abs(number)
 
     # Cast number to string
+    # print('000', using, significant_digits, (using % significant_digits), number)
     result = (using % significant_digits).format(number)
     # https://bugs.python.org/issue36622
-    if number_format_notation == 'e':
+    if number_format_notation == "e":
         # Removing leading 0 for exponential part.
-        result = re.sub(
-            pattern=r'(?<=e(\+|\-))0(?=\d)+',
-            repl=r'',
-            string=result
-        )
+        print(result)
+        result = re.sub(pattern=r"(?<=e(\+|\-))0(?=\d)+", repl=r"", string=result)
     return result
+
+
+print(number_to_string(5.66666666, 3, "e"))
+x = Decimal(5.66666666)
+print(x)
+print(number_to_string(x, 3, "f"))
+print(number_to_string(1 + 2.5j, 3))
 
 
 class DeepDiffDeprecationWarning(DeprecationWarning):
     """
     Use this warning instead of DeprecationWarning
     """
+
     pass
 
 
@@ -492,25 +608,23 @@ def get_numpy_ndarray_rows(obj, shape=None):
 
 
 class _NotFound:
-
     def __eq__(self, other):
         return False
 
     __req__ = __eq__
 
     def __repr__(self):
-        return 'not found'
+        return "not found"
 
     __str__ = __repr__
 
 
 not_found = _NotFound()
 
-warnings.simplefilter('once', DeepDiffDeprecationWarning)
+warnings.simplefilter("once", DeepDiffDeprecationWarning)
 
 
 class OrderedSetPlus(OrderedSet):
-
     def lpop(self):
         """
         Remove and return the first element from the set.
@@ -521,7 +635,7 @@ class OrderedSetPlus(OrderedSet):
             1
         """
         if not self.items:
-            raise KeyError('lpop from an empty set')
+            raise KeyError("lpop from an empty set")
 
         elem = self.items[0]
         del self.items[0]
@@ -532,6 +646,12 @@ class OrderedSetPlus(OrderedSet):
         return str(list(self))
 
     __str__ = __repr__
+
+
+x = OrderedSetPlus([1, 2, 3, 5, 5, 4, 6, 7])
+x.add(1)
+print("*************")
+print(x, x.lpop())
 
 
 class RepeatedTimer:
@@ -577,21 +697,21 @@ def _eval_decimal(params):
 
 
 def _eval_datetime(params):
-    params = f'({params})'
+    params = f"({params})"
     params = literal_eval(params)
     return datetime.datetime(*params)
 
 
 def _eval_date(params):
-    params = f'({params})'
+    params = f"({params})"
     params = literal_eval(params)
     return datetime.date(*params)
 
 
 LITERAL_EVAL_PRE_PROCESS = [
-    ('Decimal(', ')', _eval_decimal),
-    ('datetime.datetime(', ')', _eval_datetime),
-    ('datetime.date(', ')', _eval_date),
+    ("Decimal(", ")", _eval_decimal),
+    ("datetime.datetime(", ")", _eval_datetime),
+    ("datetime.date(", ")", _eval_date),
 ]
 
 
@@ -605,7 +725,7 @@ def literal_eval_extended(item):
         for begin, end, func in LITERAL_EVAL_PRE_PROCESS:
             if item.startswith(begin) and item.endswith(end):
                 # Extracting and removing extra quotes so for example "Decimal('10.1')" becomes "'10.1'" and then '10.1'
-                params = item[len(begin): -len(end)].strip('\'\"')
+                params = item[len(begin) : -len(end)].strip("'\"")
                 return func(params)
         raise
 
@@ -616,13 +736,13 @@ def time_to_seconds(t):
 
 def datetime_normalize(truncate_datetime, obj):
     if truncate_datetime:
-        if truncate_datetime == 'second':
+        if truncate_datetime == "second":
             obj = obj.replace(microsecond=0)
-        elif truncate_datetime == 'minute':
+        elif truncate_datetime == "minute":
             obj = obj.replace(second=0, microsecond=0)
-        elif truncate_datetime == 'hour':
+        elif truncate_datetime == "hour":
             obj = obj.replace(minute=0, second=0, microsecond=0)
-        elif truncate_datetime == 'day':
+        elif truncate_datetime == "day":
             obj = obj.replace(hour=0, minute=0, second=0, microsecond=0)
     if isinstance(obj, datetime.datetime):
         obj = obj.replace(tzinfo=datetime.timezone.utc)
@@ -631,11 +751,14 @@ def datetime_normalize(truncate_datetime, obj):
     return obj
 
 
+print(datetime_normalize("hour", datetime.time(12, 12, 12, 0)))
+
+
 def get_truncate_datetime(truncate_datetime):
     """
     Validates truncate_datetime value
     """
-    if truncate_datetime not in {None, 'second', 'minute', 'hour', 'day'}:
+    if truncate_datetime not in {None, "second", "minute", "hour", "day"}:
         raise ValueError("truncate_datetime must be second, minute, hour or day")
     return truncate_datetime
 
@@ -650,7 +773,7 @@ def cartesian_product_numpy(*arrays):
     arr = np.empty((la, *map(len, arrays)), dtype=dtype)
     idx = slice(None), *repeat(None, la)
     for i, a in enumerate(arrays):
-        arr[i, ...] = a[idx[:la - i]]
+        arr[i, ...] = a[idx[: la - i]]
     return arr.reshape(la, -1).T
 
 
@@ -664,11 +787,7 @@ def diff_numpy_array(A, B):
     return A[~np.isin(A, B)]
 
 
-PYTHON_TYPE_TO_NUMPY_TYPE = {
-    int: np_int64,
-    float: np_float64,
-    Decimal: np_float64
-}
+PYTHON_TYPE_TO_NUMPY_TYPE = {int: np_int64, float: np_float64, Decimal: np_float64}
 
 
 def get_homogeneous_numpy_compatible_type_of_seq(seq):
@@ -686,7 +805,9 @@ def get_homogeneous_numpy_compatible_type_of_seq(seq):
         return False
 
 
-def detailed__dict__(obj, ignore_private_variables=True, ignore_keys=frozenset(), include_keys=None):
+def detailed__dict__(
+    obj, ignore_private_variables=True, ignore_keys=frozenset(), include_keys=None
+):
     """
     Get the detailed dictionary of an object.
 
@@ -700,23 +821,37 @@ def detailed__dict__(obj, ignore_private_variables=True, ignore_keys=frozenset()
             except Exception:
                 pass
             else:
-                if not callable(value) or key == '__objclass__':  # We don't want to compare functions, however for backward compatibility, __objclass__ needs to be reported.
+                if (
+                    not callable(value) or key == "__objclass__"
+                ):  # We don't want to compare functions, however for backward compatibility, __objclass__ needs to be reported.
                     result[key] = value
     else:
         result = obj.__dict__.copy()  # A shallow copy
         private_var_prefix = f"_{obj.__class__.__name__}__"  # The semi private variables in Python get this prefix
         for key in ignore_keys:
             if key in result or (
-                ignore_private_variables and key.startswith('__') and not key.startswith(private_var_prefix)
+                ignore_private_variables
+                and key.startswith("__")
+                and not key.startswith(private_var_prefix)
             ):
                 del result[key]
         for key in dir(obj):
-            if key not in result and key not in ignore_keys and (
-                    not ignore_private_variables or (
-                        ignore_private_variables and not key.startswith('__') and not key.startswith(private_var_prefix)
+            if (
+                key not in result
+                and key not in ignore_keys
+                and (
+                    not ignore_private_variables
+                    or (
+                        ignore_private_variables
+                        and not key.startswith("__")
+                        and not key.startswith(private_var_prefix)
                     )
+                )
             ):
                 value = getattr(obj, key)
                 if not callable(value):
                     result[key] = value
     return result
+print(detailed__dict__(OrderedSetPlus([1, 2, 3, 3, 3, 5])))
+print(detailed__dict__(OrderedSetPlus([1, 2, 3, 3, 3, 5]), False))
+print(detailed__dict__(OrderedSetPlus([1, 2, 3, 3, 3, 5]), True, ['_abc_impl'], ['items', 'map', '__abstractmethods__']))

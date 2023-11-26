@@ -57,8 +57,10 @@ class PrettyOrderedSet(OrderedSet):
     def __repr__(self):
         return '[{}]'.format(", ".join(map(str, self)))
 
+print(PrettyOrderedSet([1, 2, 3, 3, 5]))
 
 class TreeResult(ResultDict):
+    # give empty Order set to each keys
     def __init__(self):
         for key in REPORT_KEYS:
             self[key] = PrettyOrderedSet()
@@ -528,11 +530,14 @@ class DiffLevel:
 
         self.report_type = report_type
 
+        print(10, '*', self.t1, self.t2, self.down, self.up, sep="\n- ")
+
         # If this object is this change's deepest level, this contains a string describing the type of change.
         # Examples: "set_item_added", "values_changed"
 
         # Note: don't use {} as additional's default value - this would turn out to be always the same dict object
         self.additional = dict_() if additional is None else additional
+        print(11, self.additional)
 
         # For some types of changes we store some additional information.
         # This is a dict containing this information.
@@ -557,6 +562,8 @@ class DiffLevel:
 
         self.verbose_level = verbose_level
 
+        print(12, "+",self.t1_child_rel, self.t2_child_rel, self._path, self.verbose_level)
+
     def __repr__(self):
         if self.verbose_level:
             if self.additional:
@@ -572,12 +579,12 @@ class DiffLevel:
 
     def __setattr__(self, key, value):
         # Setting up or down, will set the opposite link in this linked list.
+        print(13, key, value, key in UP_DOWN , value is not None, key in UP_DOWN and value is not None)
         if key in UP_DOWN and value is not None:
-            self.__dict__[key] = value
             opposite_key = UP_DOWN[key]
             value.__dict__[opposite_key] = self
-        else:
-            self.__dict__[key] = value
+        
+        self.__dict__[key] = value
 
     def __iter__(self):
         yield self.t1
@@ -596,6 +603,7 @@ class DiffLevel:
         :param param: A ChildRelationship subclass-dependent parameter describing how to get from parent to child,
                       e.g. the key in a dict
         """
+        print(14, "~~", self.t1, self.down, self.down.t1 is not notpresent,self.down.t2 is not notpresent)
         if self.down.t1 is not notpresent:
             self.t1_child_rel = ChildRelationship.create(
                 klass=klass, parent=self.t1, child=self.down.t1, param=param)
@@ -746,6 +754,7 @@ class DiffLevel:
         result = DiffLevel(
             new_t1, new_t2, down=None, up=level, report_type=report_type, verbose_level=self.verbose_level)
         level.down = result
+        print(15, "*~", self.all_down, level.down, new_t1, new_t2)
         level.auto_generate_child_rel(
             klass=child_relationship_class, param=child_relationship_param, param2=child_relationship_param2)
         return result

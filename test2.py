@@ -1,17 +1,21 @@
 from deepdiff import DeepDiff
 import os
+import platform
 
 n = 1
 g = None
 gn = 1
 CHECKPOINT = False
+if platform.system() == "Linux":
+    os.system('clear')
+else:
+    os.system('cls')
 
 # print test
 def pt(*args, **kwargs):
     global n, g, gn
 
     if(not CHECKPOINT):
-        os.system('clear')
         return
 
     if "g" in kwargs:
@@ -66,86 +70,85 @@ DeepDiff Version 5.8.1
 
 # testing on dict
 # both dict is same
-t = {}
-pt(DeepDiff(t, t))
+# t = {}
+# pt(DeepDiff(t, t))
 
-# different dict is same
-t1 = {"a": "a", "b": "b", "b": "b"}
-t2 = {"a": "a", "b": "b", "c": "c"}
-pt(DeepDiff(t1, t2))
-pt(DeepDiff(t1, t2, ignore_order=True))
+# # different dict is same
+# t1 = {"a": "a", "b": "b", "b": "b"}
+# t2 = {"a": "a", "b": "b", "c": "c"}
+# pt(DeepDiff(t1, t2))
+# pt(DeepDiff(t1, t2, ignore_order=True))
 
-# different type is same
-t1 = {"a": "a", "b": "b"}
-t2 = []
-pt(DeepDiff(t1, t2))
+# # different type is same
+# t1 = {"a": "a", "b": "b"}
+# t2 = []
+# pt(DeepDiff(t1, t2))
 
-# testing on list of dict
-# different dict is same
-t1 = [1, 2, 3, 4]
-t2 = [1, 2, 4, 3, 4,]
-pt(DeepDiff(t1, t2))
-pt(DeepDiff(t1, t2, ignore_order=True))
+# # testing on list of dict
+# # different dict is same
+# t1 = [1, 2, 3, 4]
+# t2 = [1, 2, 4, 3, 4,]
+# pt(DeepDiff(t1, t2))
+# pt(DeepDiff(t1, t2, ignore_order=True))
 
-# different dict is same
-t1 = [{"a": 2}]
-t2 = [{"b": 1}]
-pt(DeepDiff(t1, t2, view="tree"), g = 1)
-pt(DeepDiff(t1, t2, ignore_order=True, view="tree"), g = 1)
-pt(DeepDiff(t1, t2, ignore_order=True, report_repetition=True, view="tree"), g = 1)
+# # different dict is same
+# t1 = [{"a": 2}]
+# t2 = [{"b": 1}]
+# pt(DeepDiff(t1, t2, view="tree"), g = 1)
+# pt(DeepDiff(t1, t2, ignore_order=True, view="tree"), g = 1)
+# pt(DeepDiff(t1, t2, ignore_order=True, report_repetition=True, view="tree"), g = 1)
 
 
-# duplicates
-t1 = [{"a": 2}, {"a": 2}]
-t2 = [{"b": 1}]
-pt(DeepDiff(t1, t2), g = 2)
-pt(DeepDiff(t1, t2, ignore_order=True), g = 2)
-pt(DeepDiff(t1, t2, ignore_order=True, report_repetition=True), g = 2)
+# # duplicates
+# t1 = [{"a": 2}, {"a": 2}]
+# t2 = [{"b": 1}]
+# pt(DeepDiff(t1, t2), g = 2)
+# pt(DeepDiff(t1, t2, ignore_order=True), g = 2)
+# pt(DeepDiff(t1, t2, ignore_order=True, report_repetition=True), g = 2)
 
-# duplicates
-t1 = [{"a": 2}]
-t2 = [{"b": 1}, {"a": 2}]
-pt(DeepDiff(t1, t2), g = 3)
-pt(DeepDiff(t1, t2, ignore_order=True), g = 3)
-pt(DeepDiff(t1, t2, ignore_order=True, report_repetition=True), g = 3)
+# # duplicates
+# t1 = [{"a": 2}]
+# t2 = [{"b": 1}, {"a": 2}]
+# pt(DeepDiff(t1, t2), g = 3)
+# pt(DeepDiff(t1, t2, ignore_order=True), g = 3)
+# pt(DeepDiff(t1, t2, ignore_order=True, report_repetition=True), g = 3)
 
-# duplicates
-t1 = [{"b": 1}]
-t2 = [{"a": 2}, {"a": 2}]
-pt(DeepDiff(t1, t2), g = 4)
-pt(DeepDiff(t1, t2, ignore_order=True), g = 4)
-pt(DeepDiff(t1, t2, ignore_order=True, report_repetition=True), g = 4)
+# # duplicates
+# t1 = [{"b": 1}]
+# t2 = [{"a": 2}, {"a": 2}]
+# pt(DeepDiff(t1, t2), g = 4)
+# pt(DeepDiff(t1, t2, ignore_order=True), g = 4)
+# pt(DeepDiff(t1, t2, ignore_order=True, report_repetition=True), g = 4)
+
+
+# # duplicates
+# t1 = [{"a": 2}, {"a": 2}]
+# t2 = [{"a": 1}]
+# pt(DeepDiff(t1, t2), g = 5)
+# pt(DeepDiff(t1, t2, ignore_order=True), g = 5)
+# pt(DeepDiff(t1, t2, ignore_order=True, report_repetition=True), g = 5)
+
 CHECKPOINT = True
-
-# duplicates
-t1 = [{"a": 2}, {"a": 2}]
-t2 = [{"a": 1}]
-pt(DeepDiff(t1, t2), g = 5)
-pt(DeepDiff(t1, t2, ignore_order=True), g = 5)
-pt(DeepDiff(t1, t2, ignore_order=True, report_repetition=True), g = 5)
-
-
 # duplicates <- target this one
 t1 = [[1, 2], [1, 2]]
 t2 = [[1, 2, 3]]
-pt(DeepDiff(t1, t2), g = 6)
-pt(DeepDiff(t1, t2, ignore_order=True), g = 6)
-pt(DeepDiff(t1, t2, ignore_order=True, report_repetition=True), g = 6)
+pt(DeepDiff(t1, t2), g = 6) 
+CHECKPOINT = False
+# pt(DeepDiff(t1, t2, ignore_order=True), g = 6)
+# pt(DeepDiff(t1, t2, ignore_order=True, report_repetition=True), g = 6)
 
 
-# duplicates
-t1 = [1, 2, 2, 1]
-t2 = [1, 2]
-pt(DeepDiff(t1, t2 ), g = 7)
-pt(DeepDiff(t1, t2, ignore_order=True), g = 7)
-k1 = DeepDiff(t1, t2, ignore_order=True, report_repetition=True)
-k2 = DeepDiff(t1, t2, ignore_order=True, report_repetition=True, cutoff_intersection_for_pairs=1,
-cutoff_distance_for_pairs=1)
-(pt(k1, g = 7), pt(k2, g = 7)) if k1 != k2 else pt(k1, g = 7)
-
-t1 = {1:1, 2:2, 3:3, 4:{"a":"hello", "b":[1, 2, 3]}}
-t2 = {1:1, 2:2, 3:3, 4:{"a":"hello", "b":[1, 3, 2, 4]}}
-pt(DeepDiff(t1,t2))
+# # duplicates
+# t1 = [1, 2, 2, 1]
+# t2 = [1, 2]
+# pt(DeepDiff(t1, t2 ), g = 7)
+# pt(DeepDiff(t1, t2, ignore_order=True), g = 7)
+# k1 = DeepDiff(t1, t2, ignore_order=True, report_repetition=True)
+# k2 = DeepDiff(t1, t2, ignore_order=True, report_repetition=True, cutoff_intersection_for_pairs=1,
+# cutoff_distance_for_pairs=1)
+# (pt(k1, g = 7), pt(k2, g = 7)) if k1 != k2 else pt(k1, g = 7)
 
 
-
+# t1 = {1:1, 2:2, 3:3, 4:{"a":"hello", "b":[1, 2, 3]}}
+# t2 = {1:1, 2:2, 3:3, 4:{"a":"hello", "b":[1, 3, 2, 4]}}
+# pt(DeepDiff(t1,t2))
