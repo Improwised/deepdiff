@@ -685,6 +685,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
     def _diff_iterable(self, level, parents_ids=frozenset(), _original_type=None, local_tree=None):
         """Difference of iterables"""
         if (self.ignore_order_func and self.ignore_order_func(level)) or self.ignore_order:
+            print(131, self.ignore_order, local_tree, level, parents_ids, sep="\n- ")
             self._diff_iterable_with_deephash(level, parents_ids, _original_type=_original_type, local_tree=local_tree)
         else:
             print(105, self.ignore_order, self.ignore_order_func and self.ignore_order_func(level), local_tree)
@@ -1047,6 +1048,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
     def _create_hashtable(self, level, t):
         """Create hashtable of {item_hash: (indexes, item)}"""
         obj = getattr(level, t)
+        print(133, level, t, obj)
 
         local_hashes = dict_()
         for (i, item) in enumerate(obj):
@@ -1057,12 +1059,14 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
                 # It only includes the ones needed when comparing iterables.
                 # The self.hashes dictionary gets shared between different runs of DeepHash
                 # So that any object that is already calculated to have a hash is not re-calculated.
+                print(135, i, item, level.path(), parent, self.hashes, self.deephash_parameters, sep="\n- ")
                 deep_hash = DeepHash(item,
                                      hashes=self.hashes,
                                      parent=parent,
                                      apply_hash=True,
                                      **self.deephash_parameters,
                                      )
+                print(140, i, item, deep_hash, id(item), sep="\n- ")
             except UnicodeDecodeError as err:
                 err.reason = f"Can not produce a hash for {level.path()}: {err.reason}"
                 raise
@@ -1073,6 +1077,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             else:
                 try:
                     item_hash = deep_hash[item]
+                    print(141, item, item_hash)
                 except KeyError:
                     pass
                 else:
@@ -1081,6 +1086,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
                                        "thus not counting this object." %
                                        level.path())
                     else:
+                        print(142, local_hashes, item_hash, item, sep="\n- ")
                         self._add_hash(hashes=local_hashes, item_hash=item_hash, item=item, i=i)
 
         # Also we hash the iterables themselves too so that we can later create cache keys from those hashes.
@@ -1162,6 +1168,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             cache_key = combine_hashes_lists(items=[hashes_added, hashes_removed], prefix='pairs_cache')
             if cache_key in self._distance_cache:
                 return self._distance_cache.get(cache_key).copy()
+        print(147, cache_key, [hashes_added, hashes_removed], self._stats[DISTANCE_CACHE_ENABLED], sep="\n- ")
 
         # A dictionary of hashes to distances and each distance to an ordered set of hashes.
         # It tells us about the distance of each object from other objects.
@@ -1191,6 +1198,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
                 added_hash_obj = t2_hashtable[added_hash]
                 removed_hash_obj = t1_hashtable[removed_hash]
 
+                print(150, added_hash_obj, id(removed_hash_obj.item), parents_ids)
                 # Loop is detected
                 if id(removed_hash_obj.item) in parents_ids:
                     continue
@@ -1210,10 +1218,13 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
                 pairs_of_item[_distance].add(removed_hash)
         used_to_hashes = set()
 
+        print(149, most_in_common_pairs, hashes_added, hashes_removed,t1_hashtable, t2_hashtable, sep="\n- ")
         distances_to_from_hashes = defaultdict(OrderedSetPlus)
         for from_hash, distances_to_to_hashes in most_in_common_pairs.items():
+            
             # del distances_to_to_hashes['max']
             for dist in distances_to_to_hashes:
+                print(151, from_hash, distances_to_from_hashes, dist, sep="\n- ")
                 distances_to_from_hashes[dist].add(from_hash)
 
         for dist in sorted(distances_to_from_hashes.keys()):
@@ -1235,19 +1246,23 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
         pairs.update(inverse_pairs)
         if cache_key and self._stats[DISTANCE_CACHE_ENABLED]:
             self._distance_cache.set(cache_key, value=pairs)
+        print(152, pairs)
         return pairs.copy()
 
     def _diff_iterable_with_deephash(self, level, parents_ids, _original_type=None, local_tree=None):
         """Diff of hashable or unhashable iterables. Only used when ignoring the order."""
-
         full_t1_hashtable = self._create_hashtable(level, 't1')
         full_t2_hashtable = self._create_hashtable(level, 't2')
+        print(132, "_diff_iterable_with_deephash", full_t1_hashtable, full_t2_hashtable, sep="\n- ")
+        # main hash saved
         t1_hashes = OrderedSetPlus(full_t1_hashtable.keys())
         t2_hashes = OrderedSetPlus(full_t2_hashtable.keys())
         hashes_added = t2_hashes - t1_hashes
         hashes_removed = t1_hashes - t2_hashes
+        print(143, t1_hashes, hashes_removed, t2_hashes, hashes_added, sep="\n- ")
 
         # Deciding whether to calculate pairs or not.
+        print(144, (len(hashes_added) + len(hashes_removed)), (len(full_t1_hashtable) + len(full_t2_hashtable) + 1), (len(hashes_added) + len(hashes_removed)) / (len(full_t1_hashtable) + len(full_t2_hashtable) + 1),self.cutoff_intersection_for_pairs, sep="\n- ")
         if (len(hashes_added) + len(hashes_removed)) / (len(full_t1_hashtable) + len(full_t2_hashtable) + 1) > self.cutoff_intersection_for_pairs:
             get_pairs = False
         else:
@@ -1260,11 +1275,14 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
         else:
             t1_hashtable = {k: v for k, v in full_t1_hashtable.items() if k in hashes_removed}
             t2_hashtable = {k: v for k, v in full_t2_hashtable.items() if k in hashes_added}
+        print(145, get_pairs, self.report_repetition, t1_hashtable, t2_hashtable, sep="\n- ")
 
         if self._stats[PASSES_COUNT] < self.max_passes and get_pairs:
             self._stats[PASSES_COUNT] += 1
+            print(146, self._stats[PASSES_COUNT], hashes_added, hashes_removed, t1_hashtable, t2_hashtable, parents_ids, _original_type, sep="\n- ")
             pairs = self._get_most_in_common_pairs_in_iterables(
                 hashes_added, hashes_removed, t1_hashtable, t2_hashtable, parents_ids, _original_type)
+            print(148, pairs)
         elif get_pairs:
             if not self._stats[MAX_PASS_LIMIT_REACHED]:
                 self._stats[MAX_PASS_LIMIT_REACHED] = True
@@ -1281,10 +1299,12 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             if in_t1:
                 hashtable = t1_hashtable
                 the_other_hashes = hashes_removed
+                print(154, hashtable, the_other_hashes)
             else:
                 hashtable = t2_hashtable
                 the_other_hashes = hashes_added
             other = pairs.pop(hash_value, notpresent)
+            print(155, hash_value, notpresent, other)
             if other is notpresent:
                 other = notpresent_indexed
             else:
@@ -1301,6 +1321,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
                 if self._count_diff() is StopIteration:
                     return  # pragma: no cover. This is already covered for addition (when report_repetition=False).
                 other = get_other_pair(hash_value)
+                print(153, hash_value, other)
                 item_id = id(other.item)
                 indexes = t2_hashtable[hash_value].indexes if other.item is notpresent else other.indexes
                 for i in indexes:
@@ -1638,7 +1659,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             self._diff_obj(level, parents_ids, local_tree=local_tree)
 
         elif isinstance(level.t1, Iterable):
-            print(104, "*", level, get_type(level.t1), get_type(level.t2), isinstance(level.t1, Iterable))
+            print(104, "*", level, get_type(level.t1), get_type(level.t2), isinstance(level.t1, Iterable), local_tree)
             self._diff_iterable(level, parents_ids, _original_type=_original_type, local_tree=local_tree)
 
         elif isinstance(level.t1, Enum):

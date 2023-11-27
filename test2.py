@@ -130,12 +130,13 @@ DeepDiff Version 5.8.1
 
 CHECKPOINT = True
 # duplicates <- target this one
-t1 = [[1, 2], [1, 2]]
+t1 = [[1, 2], [1, 2], [1, 2]]
 t2 = [[1, 2, 3]]
-pt(DeepDiff(t1, t2), g = 6) 
-CHECKPOINT = False
+# pt(DeepDiff(t1, t2), g = 6) 
 # pt(DeepDiff(t1, t2, ignore_order=True), g = 6)
-# pt(DeepDiff(t1, t2, ignore_order=True, report_repetition=True), g = 6)
+pt(DeepDiff(t1, t2, ignore_order=True, report_repetition=True), g=6)
+# pt(DeepDiff([{"id": 1}, {"id": 2}, {"id", 2}], [{"id":2, "name": "something"}]))
+CHECKPOINT = False
 
 
 # # duplicates

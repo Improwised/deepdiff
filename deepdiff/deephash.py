@@ -156,6 +156,7 @@ class DeepHash(Base):
                  "number_to_string_func, ignore_private_variables, parent "
                  "encodings, ignore_encoding_errors") % ', '.join(kwargs.keys()))
         if isinstance(hashes, MutableMapping):
+            print(134, "here", hashes)
             self.hashes = hashes
         elif isinstance(hashes, DeepHash):
             self.hashes = hashes.hashes
@@ -193,6 +194,7 @@ class DeepHash(Base):
         self.ignore_encoding_errors = ignore_encoding_errors
         self.ignore_iterable_order = ignore_iterable_order
 
+        print(136, obj, parent, frozenset({get_id(obj)}))
         self._hash(obj, parent=parent, parents_ids=frozenset({get_id(obj)}))
 
         if self.hashes[UNPROCESSED_KEY]:
@@ -478,6 +480,7 @@ class DeepHash(Base):
         else:
             result = not_hashed
         try:
+            print(138, self.hashes, self.hashes[obj], sep="\n- ")
             result, counts = self.hashes[obj]
         except (TypeError, KeyError):
             pass
