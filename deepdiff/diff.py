@@ -1120,6 +1120,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             self, added_hash, removed_hash, added_hash_obj, removed_hash_obj, _original_type=None):
         # We need the rough distance between the 2 objects to see if they qualify to be pairs or not
         _distance = cache_key = None
+        print(206, self._stats[DISTANCE_CACHE_ENABLED], added_hash, removed_hash, added_hash_obj, removed_hash_obj, _original_type)
         if self._stats[DISTANCE_CACHE_ENABLED]:
             cache_key = self._get_distance_cache_key(added_hash, removed_hash)
             if cache_key in self._distance_cache:
@@ -1137,7 +1138,9 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
                 _original_type=_original_type,
                 iterable_compare_func=self.iterable_compare_func,
             )
+            print(207, diff, removed_hash_obj.item, added_hash_obj.item, self._parameters, self._shared_parameters, sep="\n- ", end="\n\n")
             _distance = diff._get_rough_distance()
+            print(208, _distance)
             if cache_key and self._stats[DISTANCE_CACHE_ENABLED]:
                 self._distance_cache.set(cache_key, value=_distance)
         return _distance
@@ -1163,12 +1166,13 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
 
         Perhaps in future we can have a report key that is item duplicated and modified instead of just added.
         """
+        print("**", hashes_added, hashes_removed, t1_hashtable, t2_hashtable, parents_ids, _original_type)
         cache_key = None
         if self._stats[DISTANCE_CACHE_ENABLED]:
             cache_key = combine_hashes_lists(items=[hashes_added, hashes_removed], prefix='pairs_cache')
             if cache_key in self._distance_cache:
                 return self._distance_cache.get(cache_key).copy()
-        print(147, cache_key, [hashes_added, hashes_removed], self._stats[DISTANCE_CACHE_ENABLED], sep="\n- ")
+        print(147,self._stats[DISTANCE_CACHE_ENABLED], cache_key, [hashes_added, hashes_removed], sep="\n- ")
 
         # A dictionary of hashes to distances and each distance to an ordered set of hashes.
         # It tells us about the distance of each object from other objects.
@@ -1193,12 +1197,20 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             pre_calced_distances = self._precalculate_distance_by_custom_compare_func(
                 hashes_added, hashes_removed, t1_hashtable, t2_hashtable, _original_type)
 
+        print(204, True if hashes_added and hashes_removed and self.iterable_compare_func and len(hashes_added) > 1 and len(hashes_removed) > 1 else False)
+        for added_hash in hashes_added:
+            for removed_hash in hashes_removed:
+                print(205, added_hash, removed_hash)
+        
         for added_hash in hashes_added:
             for removed_hash in hashes_removed:
                 added_hash_obj = t2_hashtable[added_hash]
                 removed_hash_obj = t1_hashtable[removed_hash]
 
-                print(150, added_hash_obj, id(removed_hash_obj.item), parents_ids)
+                print(150, added_hash_obj, removed_hash_obj.item, 
+                      id(removed_hash_obj.item), parents_ids,
+                        id(removed_hash_obj.item) in parents_ids, 
+                        pre_calced_distances, sep="\n- ")
                 # Loop is detected
                 if id(removed_hash_obj.item) in parents_ids:
                     continue
@@ -1212,16 +1224,20 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
                 # Left for future debugging
                 # print(f'{Fore.RED}distance of {added_hash_obj.item} and {removed_hash_obj.item}: {_distance}{Style.RESET_ALL}')
                 # Discard potential pairs that are too far.
+
+                print(209, _distance >= self.cutoff_distance_for_pairs)
                 if _distance >= self.cutoff_distance_for_pairs:
                     continue
                 pairs_of_item = most_in_common_pairs[added_hash]
                 pairs_of_item[_distance].add(removed_hash)
+                print(210, pairs_of_item, removed_hash)
         used_to_hashes = set()
 
         print(149, most_in_common_pairs, hashes_added, hashes_removed,t1_hashtable, t2_hashtable, sep="\n- ")
         distances_to_from_hashes = defaultdict(OrderedSetPlus)
         for from_hash, distances_to_to_hashes in most_in_common_pairs.items():
             
+            print(211, from_hash, distances_to_to_hashes)
             # del distances_to_to_hashes['max']
             for dist in distances_to_to_hashes:
                 print(151, from_hash, distances_to_from_hashes, dist, sep="\n- ")
@@ -1275,14 +1291,14 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
         else:
             t1_hashtable = {k: v for k, v in full_t1_hashtable.items() if k in hashes_removed}
             t2_hashtable = {k: v for k, v in full_t2_hashtable.items() if k in hashes_added}
-        print(145, get_pairs, self.report_repetition, t1_hashtable, t2_hashtable, sep="\n- ")
+        print(145, hashes_added, hashes_removed, get_pairs, self.report_repetition, t1_hashtable, t2_hashtable, sep="\n- ")
 
         if self._stats[PASSES_COUNT] < self.max_passes and get_pairs:
             self._stats[PASSES_COUNT] += 1
             print(146, self._stats[PASSES_COUNT], hashes_added, hashes_removed, t1_hashtable, t2_hashtable, parents_ids, _original_type, sep="\n- ")
             pairs = self._get_most_in_common_pairs_in_iterables(
                 hashes_added, hashes_removed, t1_hashtable, t2_hashtable, parents_ids, _original_type)
-            print(148, pairs)
+            print(148, pairs, hashes_removed)
         elif get_pairs:
             if not self._stats[MAX_PASS_LIMIT_REACHED]:
                 self._stats[MAX_PASS_LIMIT_REACHED] = True
@@ -1290,6 +1306,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             pairs = dict_()
         else:
             pairs = dict_()
+        print(201, hashes_added, hashes_removed)
 
         def get_other_pair(hash_value, in_t1=True):
             """
@@ -1303,25 +1320,30 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             else:
                 hashtable = t2_hashtable
                 the_other_hashes = hashes_added
+            print(212, pairs, type(pairs))
             other = pairs.pop(hash_value, notpresent)
-            print(155, hash_value, notpresent, other)
+            print(155, hash_value, notpresent, pairs, other)
             if other is notpresent:
                 other = notpresent_indexed
             else:
                 # The pairs are symmetrical.
                 # removing the other direction of pair
                 # so it does not get used.
+                print(213, pairs[other])
                 del pairs[other]
+                print(214, pairs, the_other_hashes, other)
                 the_other_hashes.remove(other)
                 other = hashtable[other]
+                print(215, the_other_hashes, other)
             return other
 
         if self.report_repetition:
+
             for hash_value in hashes_added:
                 if self._count_diff() is StopIteration:
                     return  # pragma: no cover. This is already covered for addition (when report_repetition=False).
                 other = get_other_pair(hash_value)
-                print(153, hash_value, other)
+                print(153, hash_value, other, )
                 item_id = id(other.item)
                 indexes = t2_hashtable[hash_value].indexes if other.item is notpresent else other.indexes
                 for i in indexes:
