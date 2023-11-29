@@ -1240,12 +1240,38 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
                 the_other_hashes.remove(other)
                 other = hashtable[other]
             return other
+        
+        def get_pair_for_report_repetition(hash_value, in_t1=True):
+            """
+            Gets the other paired indexed hash item to the hash_value in the pairs dictionary
+            in_t1: are we looking for the other pair in t1 or t2?
+            """
+            if in_t1:
+                hashtable = t1_hashtable
+                the_other_hashes = hashes_removed
+            else:
+                hashtable = t2_hashtable
+                the_other_hashes = hashes_added
+            other = pairs.pop(hash_value, notpresent)
+            if other is notpresent:
+                other = notpresent_indexed
+            else:
+                # The pairs are symmetrical.
+                # removing the other direction of pair
+                # so it does not get used.
+                del pairs[other]
+                # the_other_hashes.remove(other)
+                # if len(hashtable[other].indexes) > 0:
+                hashtable[other].indexes.pop(0)
+                other = hashtable[other]
+            return other
 
         if self.report_repetition:
             for hash_value in hashes_added:
                 if self._count_diff() is StopIteration:
                     return  # pragma: no cover. This is already covered for addition (when report_repetition=False).
-                other = get_other_pair(hash_value)
+                other = get_pair_for_report_repetition(hash_value)
+                # other = get_other_pair(hash_value)
                 item_id = id(other.item)
                 indexes = t2_hashtable[hash_value].indexes if other.item is notpresent else other.indexes
                 for i in indexes:
@@ -1263,7 +1289,8 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
             for hash_value in hashes_removed:
                 if self._count_diff() is StopIteration:
                     return  # pragma: no cover. This is already covered for addition.
-                other = get_other_pair(hash_value, in_t1=False)
+                other = get_pair_for_report_repetition(hash_value, in_t1=False)
+                # other = get_other_pair(hash_value, in_t1=False)
                 item_id = id(other.item)
                 for i in t1_hashtable[hash_value].indexes:
                     change_level = level.branch_deeper(

@@ -6,6 +6,7 @@ from deepdiff import DeepDiff
 from decimal import Decimal
 from deepdiff.deephash import sha256hex
 from tests import CustomClass2
+from pprint import pprint
 
 
 class TestIgnoreOrder:
@@ -100,7 +101,7 @@ class TestIgnoreOrder:
                 }
             }
         }
-
+        pprint(ddiff)
         assert expected == ddiff
 
     def test_list_difference_ignore_order(self):
@@ -198,7 +199,6 @@ class TestIgnoreOrder:
         }
         assert result2 == ddiff2
 
-    @pytest.mark.skip
     def test_list_difference_ignore_order_report_repetition3(self):
         t1 = [{"id": 1}, {"id": 1}, {"id": 1}]
         t2 = [{"id": 1, "name": 1}]
@@ -211,6 +211,7 @@ class TestIgnoreOrder:
             },
             'dictionary_item_added': ["root[0]['name']"]
         }
+        print(ddiff2)
         assert result2 == ddiff2
 
     @pytest.mark.skip
