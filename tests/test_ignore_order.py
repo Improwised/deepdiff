@@ -198,7 +198,6 @@ class TestIgnoreOrder:
         }
         assert result2 == ddiff2
 
-    @pytest.mark.skip
     def test_list_difference_ignore_order_report_repetition3(self):
         t1 = [{"id": 1}, {"id": 1}, {"id": 1}]
         t2 = [{"id": 1, "name": 1}]

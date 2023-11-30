@@ -1241,14 +1241,50 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
                 other = hashtable[other]
             return other
 
+        def get_report_repetition_pair(hash_value, in_t1=True):
+            """
+            Gets the other paired indexed hash item to the hash_value in the pairs dictionary
+            in_t1: are we looking for the other pair in t1 or t2?
+            """
+            if in_t1:
+                hashtable = t1_hashtable
+                the_other_hashes = hashes_removed
+            else:
+                hashtable = t2_hashtable
+                the_other_hashes = hashes_added
+            other = pairs.pop(hash_value, notpresent)
+            if other is notpresent:
+                other = notpresent_indexed
+                paired_hash = notpresent
+            else:
+                # The pairs are symmetrical.
+                # removing the other direction of pair
+                # so it does not get used.
+                paired_hash = other
+                del pairs[other]
+                if len(t2_hashtable[hash_value].indexes) == len(t1_hashtable[paired_hash].indexes):
+                    the_other_hashes.remove(other)
+                other = hashtable[other]
+            return other, paired_hash
+        
+        def has_pair(hash_value, paired_hash):
+            if len(t2_hashtable[hash_value].indexes) > 0 and len(t1_hashtable[paired_hash].indexes) > 0:
+                return True
+            return False
+        
+        def pop_indexes(hash_value, paired_hash):
+            # We need to pop one index from both hashes
+            t2_hashtable[hash_value].indexes.pop(0)
+            t1_hashtable[paired_hash].indexes.pop(0)
+
         if self.report_repetition:
             for hash_value in hashes_added:
                 if self._count_diff() is StopIteration:
                     return  # pragma: no cover. This is already covered for addition (when report_repetition=False).
-                other = get_other_pair(hash_value)
+                other, paired_hash = get_report_repetition_pair(hash_value)
                 item_id = id(other.item)
                 indexes = t2_hashtable[hash_value].indexes if other.item is notpresent else other.indexes
-                for i in indexes:
+                for index, i in enumerate(indexes):
                     change_level = level.branch_deeper(
                         other.item,
                         t2_hashtable[hash_value].item,
@@ -1257,13 +1293,17 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, Base):
                     )
                     if other.item is notpresent:
                         self._report_result('iterable_item_added', change_level, local_tree=local_tree)
-                    else:
+                    elif has_pair(hash_value, paired_hash):
                         parents_ids_added = add_to_frozen_set(parents_ids, item_id)
                         self._diff(change_level, parents_ids_added, local_tree=local_tree)
+                        pop_indexes(hash_value, paired_hash)
+                    else:
+                        break
+
             for hash_value in hashes_removed:
                 if self._count_diff() is StopIteration:
                     return  # pragma: no cover. This is already covered for addition.
-                other = get_other_pair(hash_value, in_t1=False)
+                other, paired_hash = get_report_repetition_pair(hash_value, in_t1=False)
                 item_id = id(other.item)
                 for i in t1_hashtable[hash_value].indexes:
                     change_level = level.branch_deeper(
